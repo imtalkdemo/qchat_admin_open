@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qunar.qtalk.ss.workorder.dao.WorkOrderDao">
+    <sql id="allSql">
+      id ,wo_number,wo_title,fault_location, fault_desc, fault_images, wo_type, wo_status,submitter,process_person, assignee,extend_info,own_class,own_module, create_time,update_time
+    </sql>
+
+    <resultMap id="resultMap" type="com.qunar.qtalk.ss.workorder.model.WorkOrder">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="wo_number" property="woNumber" jdbcType="VARCHAR"/>
+        <result column="wo_title" property="woTitle" jdbcType="VARCHAR"/>
+        <result column="fault_location" property="faultLocation" jdbcType="VARCHAR"/>
+        <result column="fault_desc" property="faultDesc"  jdbcType="VARCHAR"/>
+        <result column="fault_images" property="faultImages" jdbcType="OTHER" typeHandler="com.qunar.qtalk.ss.workorder.dao.handler.StringTypeHandler"/>
+        <result column="wo_status" property="woStatus" jdbcType="INTEGER"/>
+        <result column="wo_type" property="woType" jdbcType="INTEGER"/>
+        <result column="submitter" property="submitter" jdbcType="VARCHAR"/>
+        <result column="assignee" property="assignee" jdbcType="VARCHAR"/>
+        <result column="own_class" property="ownClass" jdbcType="VARCHAR"/>
+        <result column="own_module" property="ownModule" jdbcType="VARCHAR"/>
+        <result column="process_person" property="processPerson" jdbcType="OTHER" typeHandler="com.qunar.qtalk.ss.workorder.dao.handler.StringTypeHandler"/>
+        <result column="extend_info" property="extendInfo" jdbcType="OTHER" typeHandler="com.qunar.qtalk.ss.workorder.dao.handler.JsonTypeHandler"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+    <select id="insertWorkOrder" parameterType="com.qunar.qtalk.ss.workorder.model.WorkOrder" resultType="java.lang.String">
+        INSERT INTO work_order(wo_number, wo_title,fault_location, fault_desc, fault_images,own_class,own_module, wo_type,submitter)
+        VALUES ((SELECT 'GD'||lpad((CASE when  max(id) IS NULL then 1 ELSE max(id)+1 END):: text, 9, '0') from work_order),#{woTitle},
+                #{faultLocation},#{faultDesc},#{faultImages,jdbcType=OTHER, typeHandler=com.qunar.qtalk.ss.workorder.dao.handler.StringTypeHandler},#{ownClass},#{ownModule},#{woType},#{submitter})
+                on conflict(wo_number) do nothing RETURNING wo_number
+    </select>
+
+    <select id="selectByWoNumber" parameterType="java.lang.String" resultMap="resultMap">
+        SELECT <include refid="allSql"/> from work_order where wo_number=#{woNumber}
+    </select>
+
+    <select id="selectWoList" parameterType="com.qunar.qtalk.ss.workorder.bo.WorkOrderRequestBO" resultMap="resultMap">
+        SELECT <include refid="allSql"/> from work_order where 1=1
+        <if test="ownClass!=null and ownClass!=''">
+            and own_class =#{ownClass}
+        </if>
+        <if test="ownModule!=null and ownModule!=''">
+            and own_module =#{ownModule}
+        </if>
+        <if test="woStatus!=null">
+            and wo_status=#{woStatus}
+        </if>
+        <if test="createTime!=null">
+            and to_char(create_time,'YYYY-MM-DD')=to_char(#{createTime}::date,'YYYY-MM-DD')
+        </if>
+        <if test="woNumber!=null">
+            and wo_number like CONCAT('%',#{woNumber},'%')
+        </if>
+        <if test="woTitle!=null">
+            and wo_title like CONCAT('%',#{woTitle},'%')
+        </if>
+        <if test="faultDesc!=null">
+            and fault_desc like CONCAT('%',#{faultDesc},'%')
+        </if>
+        <if test="submitter!=null">
+            and submitter=#{submitter}
+        </if>
+        <if test="assignee!=null">
+            and assignee=#{assignee}
+        </if>
+        and (process_person @>ARRAY[#{processUser}]::varchar[]
+        <if test="userClass != null and userClass.size() > 0">
+            or own_class in
+            <foreach collection="userClass" open="(" close=")" separator="," item="woClass">
+                #{woClass}
+            </foreach>
+        </if>)
+        order by wo_status asc,create_time desc limit #{rowNum} offset #{offset};
+    </select>
+
+    <select id="selectWoListCount" parameterType="com.qunar.qtalk.ss.workorder.bo.WorkOrderRequestBO" resultType="java.lang.Integer">
+        SELECT count(*) from work_order where 1=1
+        <if test="ownClass!=null and ownClass!=''">
+            and own_class =#{ownClass}
+        </if>
+        <if test="ownModule!=null and ownModule!=''">
+            and own_module =#{ownModule}
+        </if>
+        <if test="woStatus!=null">
+            and wo_status=#{woStatus}
+        </if>
+        <if test="createTime!=null">
+            and to_char(create_time,'YYYY-MM-DD')=to_char(#{createTime}::date,'YYYY-MM-DD')
+        </if>
+        <if test="woNumber!=null">
+            and wo_number like CONCAT('%',#{woNumber},'%')
+        </if>
+        <if test="woTitle!=null">
+            and wo_title like CONCAT('%',#{woTitle},'%')
+        </if>
+        <if test="faultDesc!=null">
+            and fault_desc like CONCAT('%',#{faultDesc},'%')
+        </if>
+        <if test="submitter!=null">
+            and submitter=#{submitter}
+        </if>
+        <if test="assignee!=null">
+            and assignee=#{assignee}
+        </if>
+        and ( process_person @>ARRAY[#{processUser}]::varchar[]
+        <if test="userClass != null and userClass.size() > 0">
+            or own_class in
+            <foreach collection="userClass" open="(" close=")" separator="," item="woClass">
+                #{woClass}
+            </foreach>
+        </if>);
+    </select>
+
+    <update id="updateWorkerOrder" parameterType="com.qunar.qtalk.ss.workorder.model.WorkOrder">
+      UPDATE work_order
+      <set>
+          <if test="woTitle!=null">
+              wo_title=#{woTitle},
+          </if>
+          <if test="faultLocation!=null">
+              fault_location=#{faultLocation},
+          </if>
+          <if test="faultDesc!=null">
+              fault_desc=#{faultDesc},
+          </if>
+          <if test="faultImages!=null">
+              fault_images=#{faultImages ,jdbcType=OTHER,typeHandler=com.qunar.qtalk.ss.workorder.dao.handler.StringTypeHandler},
+          </if>
+          <if test="ownClass!=null">
+              own_class=#{ownClass},
+          </if>
+          <if test="ownModule!=null">
+              own_module=#{ownModule},
+          </if>
+          <if test="woType!=null">
+              wo_type=#{woType},
+          </if>
+          <if test="submitter!=null">
+              submitter=#{submitter},
+          </if>
+          <if test="assignee!=null">
+              assignee=#{assignee},
+          </if>
+          <if test="processPerson!=null">
+              process_person=#{processPerson ,jdbcType=OTHER,typeHandler=com.qunar.qtalk.ss.workorder.dao.handler.StringTypeHandler},
+          </if>
+          <if test="extendInfo!=null">
+              extend_info=#{extendInfo ,jdbcType=OTHER,typeHandler=com.qunar.qtalk.ss.workorder.dao.handler.JsonTypeHandler},
+          </if>
+          update_time=now()
+      </set>
+        WHERE wo_number=#{woNumber}
+    </update>
+
+
+    <select id="selectWorkOrderClass" resultType="java.lang.String">
+        SELECT supplier.name from sys_user LEFT JOIN supplier on
+        sys_user.supplier_id= supplier.id LEFT JOIN seat_group ON supplier.id= seat_group.supplier_id
+        where sys_user.qunar_name=#{loginUser} and supplier.status=1
+        ORDER BY supplier.name;
+    </select>
+
+    <select id="selectWorkOrderModule" resultType="java.lang.String">
+        SELECT seat_group.name as ownModule from sys_user LEFT JOIN supplier on
+        sys_user.supplier_id= supplier.id LEFT JOIN seat_group ON supplier.id= seat_group.supplier_id
+        where sys_user.qunar_name=#{loginUser} and supplier.status=1
+        <if test="ownClass!=null">
+            and supplier.name =#{ownClass}
+        </if>
+        <if test="ownModule!=null">
+            and seat_group.name like CONCAT('%',#{ownModule},'%')
+        </if>
+        ORDER BY ownModule;
+    </select>
+
+    <insert id="saveRemark">
+        INSERT into work_order_remark(operator_name, remark, wo_number) VALUES (#{operatorName},#{remark},#{woNumber});
+    </insert>
+
+    <select id="selectRemarkList" resultType="com.qunar.qtalk.ss.workorder.model.WorkOrderRemark">
+        SELECT operator_name as operatorName, remark, wo_number as woNumber, create_time as createTime from work_order_remark where wo_number=#{woNumber}
+    </select>
+
+
+    <select id="selectWoClass" resultType="java.lang.String">
+        SELECT supplier.name
+        from sys_user LEFT JOIN supplier on sys_user.supplier_id= supplier.id LEFT JOIN seat_group ON supplier.id= seat_group.supplier_id
+        where sys_user.qunar_name=#{loginUser} and supplier.status=1;
+    </select>
+
+    <insert id="saveWorkOrderLog" parameterType="com.qunar.qtalk.ss.workorder.model.WorkOrderStatusLog">
+        INSERT INTO work_order_status_log(operator_name, status_log, wo_number) VALUES (#{operatorName},#{statusLog},#{woNumber})
+    </insert>
+
+    <select id="selectWorkOrderLogList" resultType="com.qunar.qtalk.ss.workorder.model.WorkOrderStatusLog">
+        SELECT operator_name as operatorName, status_log as statusLog, wo_number as woNumber,create_time as createTime from work_order_status_log where wo_number=#{woNumber} order by create_time desc;
+    </select>
+    
+    <select id="selectWorkOrderByWoNumber" resultMap="resultMap">
+        SELECT <include refid="allSql"/> from work_order where wo_number=#{woNumber}
+    </select>
+
+    <select id="selectLastWeekCount" resultType="java.lang.Integer">
+        SELECT CASE when count(*) IS NULL then 0 ELSE count(*) END FROM work_order
+        where EXTRACT(WEEK from create_time )= EXTRACT(WEEK from now()) and create_time> now()- INTERVAL '8 D'
+        <if test="userClass != null and userClass.size() > 0">
+            and own_class in
+            <foreach collection="userClass" open="(" close=")" separator="," item="woClass">
+                #{woClass}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectOrderCountByType" resultType="java.lang.Integer">
+        SELECT CASE when count(*) IS NULL then 0 ELSE count(*) END FROM work_order
+        where wo_type=#{woType} and wo_status = 1
+        <if test="userClass != null and userClass.size() > 0">
+            and own_class in
+            <foreach collection="userClass" open="(" close=")" separator="," item="woClass">
+                #{woClass}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectOwnCount" resultType="java.lang.Integer">
+        SELECT CASE when count(*) IS NULL then 0 ELSE count(*) END FROM work_order
+        where assignee=#{assignee}
+    </select>
+
+    <select id="selectOrderCountByClass" resultType="java.lang.Integer">
+        SELECT count(*) from work_order
+        where wo_status = #{woStatus}
+        <if test="userClass != null and userClass.size() > 0">
+            and own_class in
+            <foreach collection="userClass" open="(" close=")" separator="," item="woClass">
+                #{woClass}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectOrderListByClass" resultMap="resultMap">
+        SELECT <include refid="allSql"/> from work_order
+        where wo_status = #{woStatus}
+        <if test="userClass != null and userClass.size() > 0">
+            and own_class in
+            <foreach collection="userClass" open="(" close=")" separator="," item="woClass">
+                #{woClass}
+            </foreach>
+        </if>
+        ORDER  by create_time desc limit #{rowNum} offset #{offset};
+    </select>
+
+
+</mapper>
