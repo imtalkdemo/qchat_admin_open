@@ -16,7 +16,7 @@
         <java_target_version>1.8</java_target_version>
         <spring.version>4.3.20.RELEASE</spring.version>
         <org.slf4j.version>1.7.5</org.slf4j.version>
-        <fasterxml.jackson.version>2.5.3</fasterxml.jackson.version>
+        <fasterxml.jackson.version>2.10.1</fasterxml.jackson.version>
         <meerkat.version>2.2.0</meerkat.version>
         <qconfig.version>1.1.7</qconfig.version>
         <postgresql.jdbc.version>42.1.4</postgresql.jdbc.version>
