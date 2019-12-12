@@ -8,6 +8,7 @@ import com.qunar.qchat.admin.util.CollectionUtil;
 import com.qunar.qchat.admin.util.SeatQueryFilter;
 import com.qunar.qchat.admin.vo.SeatVO;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;

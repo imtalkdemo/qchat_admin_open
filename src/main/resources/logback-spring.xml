@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <property name="LOG_HOME" value="/Users/zhangchao/work/talk/qfproxy/logs"/>
+    <appender name="STDOUT"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--    &lt;!&ndash; 时间滚动输出 level为 INFO 日志 &ndash;&gt;-->
+    <appender name="file-info"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/demo.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/demo.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="prod"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/prod.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/prod.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--开发环境:打印控制台-->
+    <springProfile name="dev">
+        <logger name="com.talk.demo" level="DEBUG" additivity="false">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="file-info" />
+        </logger>
+        <root level="info">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="file-info"/>
+        </root>
+    </springProfile>
+    <!--生产环境:打印控制台和输出到文件-->
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="prod"/>
+        </root>
+    </springProfile>
+</configuration>

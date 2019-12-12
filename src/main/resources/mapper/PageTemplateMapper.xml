@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="PageTemplateMapping">
+<mapper namespace="com.qunar.qchat.admin.dao.impl.PageTemplateDaoImpl">
 
     <insert id="savePageTemplate" parameterType="PageTemplate" useGeneratedKeys="true">
         insert into page_template(name,page_css,page_html,busi_id)

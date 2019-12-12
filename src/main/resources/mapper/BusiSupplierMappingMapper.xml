@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="BusiSupplierMapping">
+<mapper namespace="com.qunar.qchat.admin.dao.impl.BusiSupplierMappingDaoImpl">
 
     <insert id="saveBusiSupplierMapping" parameterType="BusiSupplierMapping" useGeneratedKeys="true">
         insert into busi_supplier_mapping(supplier_id, busi_id, busi_supplier_id, bsuid_and_type, status)

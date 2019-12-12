@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="BusiSeatGroupMapping">
+<mapper namespace="com.qunar.qchat.admin.dao.impl.BusiSeatGroupMappingDaoImpl">
 
     <insert id="saveBusiSeatGroupMapping" parameterType="BusiSeatGroupMapping" useGeneratedKeys="true">
         insert into busi_seat_group_mapping(busi_id, group_id)

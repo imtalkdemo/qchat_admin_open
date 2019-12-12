@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="SupplierMapping">
+<mapper namespace="com.qunar.qchat.admin.dao.impl.SupplierDaoImpl">
     <select id="getSupplierList" resultType="com.qunar.qchat.admin.model.Supplier">
         select id, name, create_time as createDate from supplier where status = 1;
 	</select>
